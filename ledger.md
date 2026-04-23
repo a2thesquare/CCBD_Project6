@@ -4,7 +4,7 @@
 | Date  | Done  |  Notes | 
 |---|---|---|
 | 23/04  | Dataset_gen  | Origninally had issues because I couldn't create them directly in the git, had create them locally  |
-|   |   |   | 
+| 23/04  |  csv_to_parquet | Done but files are local, not on github (probably fine) | 
 |   |   |   | 
 
 ## Notes 
