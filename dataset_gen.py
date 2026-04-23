@@ -11,7 +11,7 @@ def generate_dataset(size):
     #os.makedirs("data", exist_ok=True)
 
     label = f"{size // 1_000_000}M"
-    output_file = f"{label}.csv"
+    output_file = f"/Users/angelikiandreadi/Downloads/{label}.csv" # must be adapted
 
     chunk_size = 100000 # at first attempted to generate line by line but took reaaaally long
 
