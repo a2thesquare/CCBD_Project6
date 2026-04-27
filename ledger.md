@@ -15,7 +15,7 @@
 - [ ] Upload data to object storage (S3 through boto client)
     - Install and configure boto3 (CML)
     - Initialize S3 client in upload.py
-- [ ]Benchmark.py : script "wraping" the upload.py, measuring the performance of our pipeline (measures how much data is moved, how fast, etc)
+- [ ] Benchmark.py : script "wraping" the upload.py, measuring the performance of our pipeline (measures how much data is moved, how fast, etc)
 
 - Compare how data engineering choices impact pricing (2 per category)
   - Format (other than parquet?)
