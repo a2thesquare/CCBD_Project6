@@ -8,6 +8,7 @@ regions = ["North America", "South America", "Europe", "Asia", " Africa"]
 events = ["view", "click", "buy", "login", "logout"] 
 
 def generate_dataset(size):
+    np.random.seed(42)
     #os.makedirs("data", exist_ok=True)
 
     label = f"{size // 1_000_000}M"
