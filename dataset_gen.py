@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
+from pathlib import Path
+
 
 sizes = [5000000, 25000000, 100000000]
 
@@ -12,7 +14,7 @@ def generate_dataset(size):
     #os.makedirs("data", exist_ok=True)
 
     label = f"{size // 1_000_000}M"
-    output_file = f"/Users/angelikiandreadi/Downloads/{label}.csv" # must be adapted
+    output_file = Path.home()/"Downloads"/f"{label}.csv"
 
     chunk_size = 100000 # at first attempted to generate line by line but took reaaaally long
 
