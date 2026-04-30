@@ -4,4 +4,4 @@
 !.env.example
 
 .aws/
-credentials
+credentialsdata/
