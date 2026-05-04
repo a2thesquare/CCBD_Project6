@@ -90,3 +90,4 @@ if __name__ == "__main__":
 # python upload.py S raw
 # python upload.py S parquet
 # python upload.py S parquet --compression zstd
+# python upload.py S parquet --compression gzip

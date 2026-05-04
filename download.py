@@ -66,3 +66,4 @@ if __name__ == "__main__":
 # python download.py S raw
 # python download.py S parquet
 # python download.py S parquet --compression zstd
+# python download.py S parquet --compression gzip

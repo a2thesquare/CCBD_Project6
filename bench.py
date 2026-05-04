@@ -58,14 +58,22 @@ def run_bench(label, variant, puts, gets, lists, up_bytes, dl_bytes, up_time, dl
     print(f"  TOTAL:             CHF {total:.6f}")
 
 
-# -- run for S -----
+# -- run for S ----------------
 
 label = "S"
 
 # --- raw ---
-t0 = time.time(); upload_raw(label); up_time = time.time() - t0
+# time for upload
+t0 = time.time()
+upload_raw(label)
+up_time = time.time() - t0
+
+# time for download
 up_bytes = os.path.getsize(f"data/raw/{label}.csv")
-t0 = time.time(); download_raw(label); dl_time = time.time() - t0
+t0 = time.time()
+download_raw(label)
+dl_time = time.time() - t0
+
 dl_bytes = os.path.getsize(f"data/download/{label}_raw.csv")
 run_bench(label, "raw", puts=1, gets=1, lists=1,
           up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
@@ -73,9 +81,17 @@ run_bench(label, "raw", puts=1, gets=1, lists=1,
 
 # --- parquet (all compression types) ---
 for compression in ["snappy", "zstd", "gzip"]:
-    t0 = time.time(); upload_parquet(label, compression); up_time = time.time() - t0
+    # time for download
+    t0 = time.time()
+    upload_parquet(label, compression)
+    up_time = time.time() - t0
+
+    # time for upload 
     up_bytes = os.path.getsize(f"data/parquet/{label}.parquet")
-    t0 = time.time(); download_parquet(label, compression); dl_time = time.time() - t0
+    t0 = time.time()
+    download_parquet(label, compression)
+    dl_time = time.time() - t0
+
     dl_bytes = os.path.getsize(f"data/download/{label}.parquet")
     run_bench(label, f"parquet/{compression}", puts=1, gets=1, lists=1,
               up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
