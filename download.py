@@ -22,9 +22,11 @@ def download_raw(label):
     # head_object fetches metadata only (no data transferred) — used to get file size before downloading
     size_mb = s3.head_object(Bucket=BUCKET, Key=s3_key)["ContentLength"] / 1e6
     print(f"Downloading raw CSV ({size_mb:.0f} MB)...")
+
     t0 = time.time()
     s3.download_file(BUCKET, s3_key, str(out_path))
     elapsed = time.time() - t0
+
     print(f"Done in {elapsed:.1f}s -> {size_mb / elapsed:.1f} MB/s")
 
 
@@ -37,9 +39,11 @@ def download_parquet(label, compression="snappy"):
     # head_object fetches metadata only (no data transferred) — used to get file size before downloading
     size_mb = s3.head_object(Bucket=BUCKET, Key=s3_key)["ContentLength"] / 1e6
     print(f"Downloading Parquet ({compression}) ({size_mb:.0f} MB)...")  # just to check if it's the right size or if we have to cancel the action
+
     t0 = time.time()
     s3.download_file(BUCKET, s3_key, str(out_path))
     elapsed = time.time() - t0
+
     print(f"Done in {elapsed:.1f}s -> {size_mb / elapsed:.1f} MB/s")
 
 
@@ -48,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("dataset", choices=["S", "M", "L"])
     parser.add_argument("variant", choices=["raw", "parquet"])
     parser.add_argument(
-        "--compression",
+        "-compression",
         default="snappy",
         choices=["snappy", "zstd", "gzip"],
         help="Parquet compression codec (default: snappy)"
@@ -65,5 +69,7 @@ if __name__ == "__main__":
 
 # python download.py S raw
 # python download.py S parquet
-# python download.py S parquet --compression zstd
-# python download.py S parquet --compression gzip
+# python download.py S parquet -compression zstd
+# python download.py S parquet -compression gzip
+
+# just run from bench, this will be useless 
