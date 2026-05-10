@@ -46,6 +46,49 @@ def download_parquet(label, compression="snappy"):
 
     print(f"Done in {elapsed:.1f}s -> {size_mb / elapsed:.1f} MB/s")
 
+def download_parquet_small(label, compression=None):
+    out_dir = Path(f"data/download/parquet_small/{label}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    s3_prefix = f"curated/{label}/parquet_small/" #since its going to be many files, its a file not a .parquet
+
+    response = s3.list_objects_v2(Bucket=BUCKET, Prefix=s3_prefix)
+    objects = response.get("Contents", [])
+
+    if not objects:
+        print(f"No files found under {s3_prefix}")
+
+    total_mb = sum(o["Size"] for o in objects)/1e6
+
+    t0 = time.time()
+    for obj in objects:
+        filename = Path(obj["Key"]).name # extract just the filenames from the s3 key
+        out_path = out_dir/filename
+        s3.download_file(BUCKET, obj["Key"], str(out_path))
+    time_passed = time.time() - t0
+
+def download_parquet_partitioned(label, compression=None):
+    out_dir = Path(f"data/download/parquet_partitioned/{label}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    s3_prefix = f"curated/{label}/parquet_partitioned/"
+
+    response = s3.list_objects_v2(Bucket=BUCKET, prefix=s3_prefix)
+    objects = response.get("Contents", [])
+
+    if not objects:
+        print(f"No files found under {s3_prefix}")
+    
+
+    total_mb = sum(o["Size"] for o in objects) / 1e6
+    print(f"Downloading {len(objects)} partitioned Parquet files ({total_mb:.0f} MB)...")
+
+    t0 = time.time()
+    for obj in objects:
+        # rebuild the subfolder structure locally
+        relative_path = obj["Key"].replace(s3_prefix, "")
+        out_path      = out_dir / relative_path
+        out_path.parent.mkdir(parents=True, exist_ok=True)  # create date=.../ subfolders
+        s3.download_file(BUCKET, obj["Key"], str(out_path))
+    elapsed = time.time() - t0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

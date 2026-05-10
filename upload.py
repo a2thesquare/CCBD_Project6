@@ -36,6 +36,7 @@ def csv_to_parquet(csv_path, parquet_path, compression="snappy"):
     if writer:
         writer.close()
 
+# Upload of cvs to s3
 
 def upload_raw(label):
     path = Path(f"data/raw/{label}.csv")
@@ -47,8 +48,9 @@ def upload_raw(label):
     elapsed = time.time() - t0
     print(f"Done in {elapsed:.1f}s -> {size_mb / elapsed:.1f} MB/s")
 
+# Upload of parquet to s3
 
-def upload_parquet(label, compression="snappy"):
+def upload_parquet(label, compression="None"): # changed the compression here
     csv_path = Path(f"data/raw/{label}.csv")
     out_path = Path(f"data/parquet/{label}.parquet")
     out_path.parent.mkdir(parents=True, exist_ok=True)  # create data/parquet/ if it doesn't exist
@@ -66,6 +68,55 @@ def upload_parquet(label, compression="snappy"):
     elapsed = time.time() - t0
     print(f"Done in {elapsed:.1f}s -> {size_mb / elapsed:.1f} MB/s")
 
+# Upload segmented parquet
+# Havents put print statements yet
+
+def upload_parquet_small(size, compression="snappy", target_mb=10):
+    csv_path = Path(f"data/raw/{size}.csv") # where we read from 
+    output_dir = Path(f"data/parquet_small/{size}") # where the new files will be stored
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    reader = pd.read_csv(csv_path, chunksize=100_000) # loads 1000000 rows at a time
+    s3_prefix = f"curated/{size}/parquet_small/" # where the files will be upload on s3
+    n_files = 0
+
+    for i, chunk in enumerate(reader): # loops trough the csv chunk by chunk
+        table = pa.Table.from_pandas(chunk) # convert the pd df in a pyarrow table
+        output_path = output_dir/f"part_{i:05d}.parquet" # create file path for that chunk
+        pq.write_table(table, output_path, compression=compression) # write the chunk 
+        s3.upload_file(str(output_path), BUCKET, f"{s3_prefix}part_{i:05d}.parquet") # uploads chunk to s3
+        n_files += 1
+    
+
+    print(f"Uploaded {n_files} small files to {s3_prefix}")
+    return n_files
+
+# Upload of partitioned by date files
+
+def upload_parquet_partitioned(size, comperession=None):
+    csv_path = Path(f"data/raw/{size}.csv") # where we read from 
+    output_dir = Path(f"data/parquet_partitionned/{size}") # where the new files will be stored
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    df = pd.read_csv(csv_path)
+    df['date'] = pd.to_datetime(df['ts']).dt.date.astype(str)
+
+    table = pa.Table.from_pandas(df)
+
+    pq.write_to_dataset(
+        table,
+        root_path=str(output_dir),
+        partition_cols=["date"],
+        comperession=comperession
+    )
+
+    n_files = 0
+    for f in output_dir.rglob("*.parquet"):
+        s3_key = f"curated/{size}/parquet_partitioned/{f.relative_to(output_dir)}"
+        s3.upload_file(str(f), BUCKET, s3_key)
+        n_files += 1
+
+    return n_files
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

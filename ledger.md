@@ -19,8 +19,8 @@
 
 - Compare how data engineering choices impact pricing (2 per category)
   - Format (other than parquet?)
-  - Layout(no partitioning/by date?)
+  - Layout (no partitioning/by date?)
   - Compression methods 
-  - File sizing (S/M/L)
+  - File sizing (S/M/L) - different ? 
     
 - Function taking tracked metrics and applying the given price sheet
