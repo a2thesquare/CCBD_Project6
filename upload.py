@@ -93,21 +93,21 @@ def upload_parquet_small(size, compression="snappy", target_mb=10):
 
 # Upload of partitioned by date files
 
-def upload_parquet_partitioned(size, comperession=None):
-    csv_path = Path(f"data/raw/{size}.csv") # where we read from 
-    output_dir = Path(f"data/parquet_partitionned/{size}") # where the new files will be stored
+def upload_parquet_partitioned(size, compression=None):
+    csv_path = Path(f"data/raw/{size}.csv")
+    output_dir = Path(f"data/parquet_partitionned/{size}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(csv_path)
-    df['date'] = pd.to_datetime(df['ts']).dt.date.astype(str)
+    df['year_month'] = pd.to_datetime(df['ts']).dt.to_period('M').astype(str)  # "2021-03"
 
     table = pa.Table.from_pandas(df)
 
     pq.write_to_dataset(
         table,
         root_path=str(output_dir),
-        partition_cols=["date"],
-        comperession=comperession
+        partition_cols=["year_month"],
+        compression=compression
     )
 
     n_files = 0

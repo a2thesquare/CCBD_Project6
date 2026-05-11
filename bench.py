@@ -20,6 +20,12 @@ PUT_PER_1000         = 0.010  # per 1000 PUT/LIST requests
 GET_PER_1000         = 0.001  # per 1000 GET requests
 EGRESS_PER_GB        = 0.090  # per GB downloaded (egress)
 
+def dir_size(path):
+    # Getting correct path, it was returning 0 mbs up and down speed
+    p = Path(path)
+    if p.is_dir():
+        return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+    return p.stat().st_size
 
 def get_stored_gb(prefix):
     # list_objects_v2 returns all objects under a given prefix - used to measure actual storage footprint
@@ -34,7 +40,6 @@ def compute_cost(stored_gb, puts, gets, lists, egress_gb):
     requests += (gets / 1000) * GET_PER_1000
     transfer = egress_gb * EGRESS_PER_GB
     return storage, requests, transfer, storage + requests + transfer
-
 
 def run_bench(label, variant, puts, gets, lists, up_bytes, dl_bytes, up_time, dl_time, prefix):
     stored_gb, n_files = get_stored_gb(prefix)
@@ -146,7 +151,7 @@ def run_exp(label, variant, compression=None):
         puts, gets, lists = n_files, n_files, n_files
 
     upload_time = time.time() - t0 # time now - t0
-    upload_bytes = os.path.getsize(upload_path) # label of the file in bytes
+    upload_bytes = dir_size(upload_path)
 
     # time to download
     t0 = time.time()
@@ -161,7 +166,8 @@ def run_exp(label, variant, compression=None):
         download_parquet_partitioned(label)
 
     download_time = time.time() - t0
-    download_bytes = os.path.getsize(download_path)
+    download_bytes = dir_size(download_path)
+
 
     # measure S3 storage
     stored_gb, n_files = get_stored_gb(s3_prefix)
@@ -191,7 +197,7 @@ def run_exp(label, variant, compression=None):
 
 
 if __name__ == "__main__":
-    for label in ["S", "M", "L"]:
+    for label in ["S"]:
         # 1) raw CSV and raw parquet
         run_exp(label, "raw")
         run_exp(label, "parquet", compression="none")

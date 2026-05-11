@@ -71,7 +71,7 @@ def download_parquet_partitioned(label, compression=None):
     out_dir.mkdir(parents=True, exist_ok=True)
     s3_prefix = f"curated/{label}/parquet_partitioned/"
 
-    response = s3.list_objects_v2(Bucket=BUCKET, prefix=s3_prefix)
+    response = s3.list_objects_v2(Bucket=BUCKET, Prefix=s3_prefix)
     objects = response.get("Contents", [])
 
     if not objects:
