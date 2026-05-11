@@ -119,6 +119,7 @@ All variants are benchmarked against the same query:
 | `parquet_small` | `curated/<label>/parquet_small/` | 50 × ~10 MB files |
 | `parquet_partitioned` | `curated/<label>/parquet_partitioned/` | Partitioned by year-month |
 
+> Label was either S, M, or L
 ---
 
 ## Team Contributions
