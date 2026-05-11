@@ -1,4 +1,4 @@
-#!/Users/keenanhardy/Desktop/SCD_6e/CloudComputing/Project/CCBD_Project6/.venv/bin/python3.13
+#!/Users/angelikiandreadi/CCBD_Project6/.venv/bin/python3
 
 import sys
 import json

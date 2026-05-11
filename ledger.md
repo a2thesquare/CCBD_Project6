@@ -7,7 +7,7 @@
 | 23/04  | csv_to_parquet | Done but files are local, not on github (probably fine) | 
 | 27/04  | Dataset_gen | Added seed and modulable path  | 
 | 01/05  | Fixed Boto being visible in repo, changed keys for security. Added Upload,download and bench for raw and parquet |
-## Notes 
+| 10/10  | Added the upload_parquet_small(), upload_parquet_partion() and the corresponding downloads and the global function in bench.py
 
 *Project steps:*
 - [x] Generate datasets (S/M/L), save as csv (use PyArrow) -> mimic logs/activity of a web app (simple website like galaxus)

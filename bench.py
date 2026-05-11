@@ -61,134 +61,133 @@ def run_bench(label, variant, puts, gets, lists, up_bytes, dl_bytes, up_time, dl
 
 # -- run for S ----------------
 
-label = "S"
+# label = "S"
 
-# --- raw ---
-# time for upload
-t0 = time.time()
-upload_raw(label)
-up_time = time.time() - t0
+# # --- raw ---
+# # time for upload
+# t0 = time.time()
+# upload_raw(label)
+# up_time = time.time() - t0
 
-# time for download
-up_bytes = os.path.getsize(f"data/raw/{label}.csv")
-t0 = time.time()
-download_raw(label)
-dl_time = time.time() - t0
+# # time for download
+# up_bytes = os.path.getsize(f"data/raw/{label}.csv")
+# t0 = time.time()
+# download_raw(label)
+# dl_time = time.time() - t0
 
-dl_bytes = os.path.getsize(f"data/download/{label}_raw.csv")
-run_bench(label, "raw", puts=1, gets=1, lists=1,
-          up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
-          prefix=f"raw/{label}/")
+# dl_bytes = os.path.getsize(f"data/download/{label}_raw.csv")
+# run_bench(label, "raw", puts=1, gets=1, lists=1,
+#           up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
+#           prefix=f"raw/{label}/")
 
-# --- parquet (all compression types) ---
-for compression in ["snappy", "zstd", "gzip"]:
-    # time for download
-    t0 = time.time()
-    upload_parquet(label, compression)
-    up_time = time.time() - t0
+# # --- parquet (all compression types) ---
+# for compression in ["snappy", "zstd", "gzip"]:
+#     # time for download
+#     t0 = time.time()
+#     upload_parquet(label, compression)
+#     up_time = time.time() - t0
 
-    # time for upload 
-    up_bytes = os.path.getsize(f"data/parquet/{label}.parquet")
-    t0 = time.time()
-    download_parquet(label, compression)
-    dl_time = time.time() - t0
+#     # time for upload 
+#     up_bytes = os.path.getsize(f"data/parquet/{label}.parquet")
+#     t0 = time.time()
+#     download_parquet(label, compression)
+#     dl_time = time.time() - t0
 
-    dl_bytes = os.path.getsize(f"data/download/{label}.parquet")
-    run_bench(label, f"parquet/{compression}", puts=1, gets=1, lists=1,
-              up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
-              prefix=f"curated/{label}/parquet/")
+#     dl_bytes = os.path.getsize(f"data/download/{label}.parquet")
+#     run_bench(label, f"parquet/{compression}", puts=1, gets=1, lists=1,
+#               up_bytes=up_bytes, dl_bytes=dl_bytes, up_time=up_time, dl_time=dl_time,
+#               prefix=f"curated/{label}/parquet/")
     
 #----------------------------------------------------------------------------------------------------
 # not touching the code on top yet, just trying it out as another way
 
     # Alternative as a main funct and loop
-    RESULTS_PATH = Path("results.csv")
+RESULTS_PATH = Path("results.csv")
 
-    def run_exp(label, variant, compression=None):
-        if variant == "raw": # just a csv
-            upload_path = Path(f"data/raw/{label}.csv")
-            download_path = Path(f"data/download/{label}_raw.csv")
-            s3_prefix = f"raw/{label}/"
+def run_exp(label, variant, compression=None):
+    if variant == "raw": # just a csv
+        upload_path = Path(f"data/raw/{label}.csv")
+        download_path = Path(f"data/download/{label}_raw.csv")
+        s3_prefix = f"raw/{label}/"
         
-        elif variant == "parquet":
-            upload_path = Path(f"data/parquet/{label}.parquet")
-            download_path = Path(f"data/download/{label}.parquet")
-            s3_prefix = f"curated/{label}/parquet/"
+    elif variant == "parquet":
+        upload_path = Path(f"data/parquet/{label}.parquet")
+        download_path = Path(f"data/download/{label}.parquet")
+        s3_prefix = f"curated/{label}/parquet/"
 
-        elif variant == "parquet_small":
-            upload_path = Path(f"data/parquet_small/{label}")
-            download_path = Path(f"data/download/parquet_small/{label}")
-            s3_prefix = f"curated/{label}/parquet_small/"
+    elif variant == "parquet_small":
+        upload_path = Path(f"data/parquet_small/{label}")
+        download_path = Path(f"data/download/parquet_small/{label}")
+        s3_prefix = f"curated/{label}/parquet_small/"
 
+    
+    elif variant == "parquet_partitioned":
+        upload_path = Path(f"data/parquet_partitionned/{label}")
+        download_path = Path(f"data/download/parquet_partitioned/{label}")
+        s3_prefix = f"curated/{label}/parquet_partitioned/"
         
-        elif variant == "parquet_partitioned":
-            upload_path = Path(f"data/parquet_partitionned/{label}")
-            download_path = Path(f"data/download/parquet_partitioned/{label}")
-            s3_prefix = f"curated/{label}/parquet_partitioned/"
-            
-        # time to upload
-        t0 = time.time() # return current time in sec
+    # time to upload
+    t0 = time.time() # return current time in sec
 
-        if variant == "raw":
-            upload_raw(label) #upload happens
+    if variant == "raw":
+        upload_raw(label) #upload happens
+        puts, gets, lists = 1,1,1
 
-        elif variant == "parquet":
-            upload_parquet(label, compression)
-            puts, gets, lists = 1,1,1
+    elif variant == "parquet":
+        upload_parquet(label, compression)
+        puts, gets, lists = 1,1,1
 
-        elif variant == "parquet_small":
-            n_files = upload_parquet_small(label)
-            puts, gets, lists = n_files, n_files, 1
+    elif variant == "parquet_small":
+        n_files = upload_parquet_small(label)
+        puts, gets, lists = n_files, n_files, 1
 
-        elif variant == "parquet_partitioned":
-            n_files = upload_parquet_partitioned(label, compression)
-            puts, gets, lists = n_files, n_files, n_files
+    elif variant == "parquet_partitioned":
+        n_files = upload_parquet_partitioned(label, compression)
+        puts, gets, lists = n_files, n_files, n_files
 
-        upload_time = time.time() - t0 # time now - t0
-        upload_bytes = os.path.getsize(upload_path) # label of the file in bytes
+    upload_time = time.time() - t0 # time now - t0
+    upload_bytes = os.path.getsize(upload_path) # label of the file in bytes
 
-        # time to download
-        t0 = time.time()
+    # time to download
+    t0 = time.time()
 
-        if variant == "raw":
-            download_raw(label)
-        elif variant == "parquet":
-            download_parquet(label)
-        elif variant == "parquet_small":
-            download_parquet_small(label)
-        elif variant == "parquet_partitioned":
-            download_parquet_partitioned(label)
-            
-        download_time = time.time() - t0
-        download_bytes = os.path.getsize(download_path)
+    if variant == "raw":
+        download_raw(label)
+    elif variant == "parquet":
+        download_parquet(label)
+    elif variant == "parquet_small":
+        download_parquet_small(label)
+    elif variant == "parquet_partitioned":
+        download_parquet_partitioned(label)
 
-        # measure S3 storage
-        stored_gb, n_files = get_stored_gb(s3_prefix)
-        egress_gb = dl_bytes / 1e9
+    download_time = time.time() - t0
+    download_bytes = os.path.getsize(download_path)
 
-        # compute the cost
-        storage, requests, transfer, total = compute_cost(
-            stored_gb, puts, gets, lists, egress_gb
-        )
+    # measure S3 storage
+    stored_gb, n_files = get_stored_gb(s3_prefix)
+    egress_gb = download_bytes / 1e9
 
-        row = {
-        "label": label,
-        "variant": variant,
-        "compression":compression,
-        "n_files": n_files,
-        "stored_mb": round(stored_gb * 1000, 2),
-        "up_mbps": round(upload_bytes / 1e6 / upload_time, 2),
-        "dl_mbps": round(download_bytes / 1e6 / download_time, 2),
-        "puts": puts,
-        "gets": gets,
-        "lists":lists,
-        "storage_chf": round(storage, 6),
-        "requests_chf": round(requests, 6),
-        "transfer_chf": round(transfer, 6),
-        "total_chf": round(total, 6),
-    }
-        df_row = pd.DataFrame([row])
-        df_row.to_csv(RESULTS_PATH, mode="a", header=not RESULTS_PATH.exists(), index=False)
+    # compute the cost
+    storage, requests, transfer, total = compute_cost(stored_gb, puts, gets, lists, egress_gb)
+
+    row = {
+    "label": label,
+    "variant": variant,
+    "compression":compression,
+    "n_files": n_files,
+    "stored_mb": round(stored_gb * 1000, 2),
+    "up_mbps": round(upload_bytes / 1e6 / upload_time, 2),
+    "dl_mbps": round(download_bytes / 1e6 / download_time, 2),
+    "puts": puts,
+    "gets": gets,
+    "lists":lists,
+    "storage_chf": round(storage, 6),
+    "requests_chf": round(requests, 6),
+    "transfer_chf": round(transfer, 6),
+    "total_chf": round(total, 6),
+}
+    df_row = pd.DataFrame([row])
+    df_row.to_csv(RESULTS_PATH, mode="a", header=not RESULTS_PATH.exists(), index=False)
 
 
 if __name__ == "__main__":
@@ -197,13 +196,12 @@ if __name__ == "__main__":
         run_exp(label, "raw")
         run_exp(label, "parquet", compression="none")
 
-        # 2) parquet with snappy vs zstd vs gzip
+        # # 2) parquet with snappy vs zstd vs gzip
         run_exp(label, "parquet", compression="snappy")
         run_exp(label, "parquet", compression="zstd")
-        run_exp(label, "parquet", compression="gzip")
 
-        # 3) parquet small vs parquet compact
+        # # 3) parquet small vs parquet compact
         run_exp(label, "parquet_small") 
 
-        # 4) parquet sectionned by date
+        # # 4) parquet sectionned by date
         run_exp(label, "parquet_partitioned")

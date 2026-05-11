@@ -1,0 +1,2 @@
+label,variant,compression,n_files,stored_mb,up_mbps,dl_mbps,puts,gets,lists,storage_chf,requests_chf,transfer_chf,total_chf
+S,parquet,snappy,1,92.52,2.73,8.13,1,1,1,0.00185,2.1e-05,0.008327,0.010198
