@@ -10,3 +10,5 @@ python-dotenv==1.2.2
 s3transfer==0.17.0
 six==1.17.0
 urllib3==2.6.3
+matplotlib
+

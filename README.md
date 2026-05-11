@@ -1,18 +1,50 @@
 # CCBD_Project6
 
-Variant 6 — Cost (“cloud bill”) estimator
-Goal. Build a simple, transparent “cloud bill” estimator for object storage usage and demonstrate how
-data engineering choices (format/layout/compression/file sizing) affect cost.
-What you must implement.
-• Use a pricing model (see Section A.6.1), which include: storage per GB-month, request costs
-(PUT/GET/LIST), and transfer costs (egress).
-• Instrument your pipeline to estimate:
-– Total stored bytes (by listing objects and summing sizes).
-– Request counts (at least approximate): number of PUTs/GETs/LISTs performed by your scripts.
-– Data transferred (approximate): bytes uploaded/downloaded by your scripts.
-• Compute an estimated cost for the pipeline execution and for storing the dataset.
-Experiments (run for S/M/L).
-• Compute the bill for at least two design choices, e.g.: snappy vs zstd; small files vs compact; partitionby-date vs flat.
-• Provide a cost breakdown (storage vs requests vs transfer).
-Expected discussion. Explain which cost component dominates and why. Provide concrete recommendations to reduce cost while keeping acceptable performance. State clearly what is measured vs approximated
-(threats to validity).
+This project analyzes how data engineering choices impact object storage costs. I built an estimator to calculate the financial trade-offs between different file formats and layouts. The goal is to provide concrete recommendations for reducing cloud spend while maintaining acceptable performance, backed by a clear distinction between measured data and approximations.
+
+We compared at two design choices for each dataset size:
+
+* Compression: Snappy vs. ZSTD.
+* File Sizing: Small (100k lines) vs. Compact files.
+* Layout: Partitioned (Month-Year) vs. Flat.
+
+## Project structure
+
+```text
+CCBD_PROJECT6/
+├── dataset_gen.py
+├── data/                  # Generated data in 3 sizes
+├── s3_client.py
+├── upload.py      
+├── download.py
+├── bench.py
+├── analysis.ipynb         # Graphs and plots                  
+├── requirements.txt       # Python libraries used in the project
+└── README.md
+```
+
+## Files
+
+`dataset_gen.py`
+
+Generates the Small, Medium, and Large datasets in various formats (CSV, Parquet) and compression types.
+
+`s3_client.py`
+
+Handles the Boto3 connection to AWS and manages bucket infrastructure.
+
+`upload.py`
+
+Uploads data to S3 while measuring upload speed and counting PUT/LIST requests.
+
+`download.py`
+
+Downloads data from S3 to measure retrieval performance and count GET requests.
+
+`analysis.ipynb`
+
+Calculates the final cloud bill in CHF and generates charts for the comparison report.
+
+## Setup 
+
+
