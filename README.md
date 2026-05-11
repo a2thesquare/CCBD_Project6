@@ -47,4 +47,8 @@ Calculates the final cloud bill in CHF and generates charts for the comparison r
 
 ## Setup 
 
+## Note
+
+To maintain platform security, API keys are restricted. Please contact keenan.hardy@unine.ch to request access.
+
 
