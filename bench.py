@@ -197,7 +197,7 @@ def run_exp(label, variant, compression=None):
 
 
 if __name__ == "__main__":
-    for label in ["S"]:
+    for label in ["M","L"]:
         # 1) raw CSV and raw parquet
         run_exp(label, "raw")
         run_exp(label, "parquet", compression="none")
