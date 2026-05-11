@@ -10,18 +10,9 @@
 | 10/05  | Added the upload_parquet_small(), upload_parquet_partion() and the corresponding downloads and the global function in bench.py |
 | 11/05 | bench.py works so implementation is done, analysis of results started, README started |
 
-*Project steps:*
-- [x] Generate datasets (S/M/L), save as csv (use PyArrow) -> mimic logs/activity of a web app (simple website like galaxus)
-- [x] Transform the csvs into parquet format
-- [x] Upload data to object storage (S3 through boto client)
-    - Install and configure boto3 (CML)
-    - Initialize S3 client in upload.py
-- [x] Benchmark.py : script "wraping" the upload.py, measuring the performance of our pipeline (measures how much data is moved, how fast, etc)
-
-- Compare how data engineering choices impact pricing (2 per category)
-  - Format (other than parquet?)
-  - Layout (no partitioning/by date?)
-  - Compression methods 
-  - File sizing (S/M/L) - different ? 
-    
-- Function taking tracked metrics and applying the given price sheet
+*ROADMAP TO THE END:*
+- analysis.ipynb -- what do we keep what do we get rid of 
+- Add nano data and manipulation <<<<<<<<<<<
+- check overall code -> weird prints in download and upload --> pimp bench.py
+- Finish README
+- Finish report
