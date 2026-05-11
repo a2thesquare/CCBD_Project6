@@ -104,29 +104,6 @@ def compute_cost(stored_gb, puts, gets, lists, egress_gb):
     transfer = egress_gb * EGRESS_PER_GB
     return storage, requests, transfer, storage + requests + transfer
 
-
-def run_bench(label, variant, puts, gets, lists, up_bytes, dl_bytes, up_time, dl_time, prefix):
-    stored_gb, n_files, listing_time_s = get_stored_gb(prefix)
-    egress_gb = dl_bytes / 1e9  # bytes downloaded converted to GB for cost calculation
-
-    storage, requests, transfer, total = compute_cost(stored_gb, puts, gets, lists, egress_gb)
-
-    print(f"\n{'='*40}")
-    print(f"  {label} / {variant}")
-    print(f"{'='*40}")
-    print(f"  files in S3:       {n_files}")
-    print(f"  stored:            {stored_gb*1000:.0f} MB")
-    print(f"  upload speed:      {up_bytes/1e6/up_time:.1f} MB/s")
-    print(f"  download speed:    {dl_bytes/1e6/dl_time:.1f} MB/s")
-    print(f"  PUT requests:      {puts}")
-    print(f"  GET requests:      {gets}")
-    print(f"  LIST requests:     {lists}")
-    print(f"  --- cost breakdown ---")
-    print(f"  storage:           CHF {storage:.6f}")
-    print(f"  requests:          CHF {requests:.6f}")
-    print(f"  transfer (egress): CHF {transfer:.6f}")
-    print(f"  TOTAL:             CHF {total:.6f}")
-
 RESULTS_PATH = Path("results.csv")
 
 
