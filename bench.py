@@ -64,7 +64,7 @@ def run_query(label, variant, compression=None):
     TIME_START = "2022-01-01"
     TIME_END   = "2023-01-01"
 
-    # Predicate pushdown filter — pyarrow.dataset applies this before loading data into memory
+    #Predicate pushdown filter — pyarrow.dataset applies this before loading data into memory
     filt = (
         (pc.field("region") == REGION) &
         (pc.field("ts").cast(pa.string()) >= TIME_START) &
