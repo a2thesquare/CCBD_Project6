@@ -8,3 +8,6 @@ credentials
 data/
 demo_data/
 .venv/
+
+__pycache__/
+*.pyc
