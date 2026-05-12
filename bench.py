@@ -9,7 +9,7 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pyarrow.compute as pc
 from datetime import datetime, timezone
-
+# import shutil -------- we'd like to use this to easily replace data ( small files and partitioned ) so that we don't have to manually delete data before running bench.py
 
 # reuse upload/download functions from our existing scripts
 from upload import upload_raw, upload_parquet, upload_parquet_small, upload_parquet_partitioned

@@ -19,7 +19,7 @@ CHUNK_SIZE = 1_000_000  # rows per chunk — avoids loading the full CSV into me
 
 
 def csv_to_parquet(csv_path, parquet_path, compression="snappy"):
-    # Read the CSV in chunks to handle large files without running out of RAM, we could probably do without with are M macs but this is better
+    # Read the CSV in chunks to handle large files without running out of RAM
     reader = pd.read_csv(csv_path, chunksize=CHUNK_SIZE)
     writer = None
 
@@ -36,7 +36,7 @@ def csv_to_parquet(csv_path, parquet_path, compression="snappy"):
     if writer:
         writer.close()
 
-# Upload of cvs to s3
+# Upload of csv to s3
 
 def upload_raw(label):
     path = Path(f"data/raw/{label}.csv")
@@ -63,7 +63,7 @@ def upload_parquet(label, compression="None"): # changed the compression here
 # Upload segmented parquet
 # Havents put print statements yet
 
-def upload_parquet_small(size, compression="snappy", target_mb=10):
+def upload_parquet_small(size, compression="snappy"):
     csv_path = Path(f"data/raw/{size}.csv") # where we read from 
     output_dir = Path(f"data/parquet_small/{size}") # where the new files will be stored
     output_dir.mkdir(parents=True, exist_ok=True)

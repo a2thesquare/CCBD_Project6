@@ -48,6 +48,7 @@ def download_parquet_small(label, compression=None):
         print(f"No files found under {s3_prefix}")
 
     total_mb = sum(o["Size"] for o in objects)/1e6
+    print(f"Downloading {len(objects)} raw ({total_mb:.0f} MB)...")
 
     for obj in objects:
         filename = Path(obj["Key"]).name # extract just the filenames from the s3 key
