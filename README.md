@@ -6,7 +6,7 @@
 ## Overview
 This project analyzes how data engineering choices impact object storage costs. I built an estimator to calculate the financial trade-offs between different file formats and layouts. The goal is to provide concrete recommendations for reducing cloud spend while maintaining acceptable performance, backed by a clear distinction between measured data and approximations.
 
-We compared at two design choices for each dataset size:
+We compared 3 sets of two design choices for each dataset size:
 
 * Compression: Snappy vs. ZSTD.
 * File Sizing: Small (100k lines) vs. Compact files.
@@ -42,8 +42,6 @@ AWS_BUCKET_NAME=your_bucket_name
 To maintain platform security, API keys are restricted. 
 Please contact keenan.hardy@unine.ch to request access.
 
-> Never commit `.env` to git. It is listed in `.gitignore`.
-
 ---
 
 ## How to Reproduce Results
@@ -64,7 +62,7 @@ Target sizes: "S": 5_000_000, "M": 25_000_000, "L": 100_000_000
 python3 bench.py
 ```
 
-This will for each dataset size:
+For each data size (<label> -> S, M, L), this will : 
 1. Upload raw CSV to S3 under `raw/<label>/`
 2. Convert and upload Parquet variants (none, snappy, zstd) to `curated/<label>/`
 3. Upload small-file and partitioned layouts
