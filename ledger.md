@@ -9,6 +9,7 @@
 | 01/05  | Fixed Boto being visible in repo, changed keys for security. Added Upload,download and bench for raw and parquet |
 | 10/05  | Added the upload_parquet_small(), upload_parquet_partion() and the corresponding downloads and the global function in bench.py |
 | 11/05 | bench.py works so implementation is done, analysis of results started, README started |
+| 12/05 | |
 
 *ROADMAP TO THE END:*
 - analysis.ipynb -- what do we keep what do we get rid of 

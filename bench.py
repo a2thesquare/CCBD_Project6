@@ -1,3 +1,4 @@
+# all the imports
 import boto3
 import os
 import time
@@ -14,7 +15,7 @@ from datetime import datetime, timezone
 from upload import upload_raw, upload_parquet, upload_parquet_small, upload_parquet_partitioned
 from download import download_raw, download_parquet, download_parquet_small, download_parquet_partitioned
 
-
+# this has the access keys and bucket info form s3
 load_dotenv()
 
 
@@ -22,7 +23,7 @@ BUCKET = os.getenv("AWS_BUCKET_NAME")
 s3     = boto3.client("s3")
 
 
-# AWS S3 pricing
+# Provided pricing
 STORAGE_PER_GB_MONTH = 0.020  # per GB stored per month
 PUT_PER_1000         = 0.010  # per 1000 PUT/LIST requests
 GET_PER_1000         = 0.001  # per 1000 GET requests
