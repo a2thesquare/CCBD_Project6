@@ -76,7 +76,7 @@ def run_query(label, variant, compression=None):
     table = dataset.to_table(filter=filt, columns=["event_type", "value"])
     elapsed = time.time() - t0
 
-    # Group by event_type → count + avg value
+    # Group by event_type -> count + avg value
     df = table.to_pandas()
     df["value"] = pd.to_numeric(df["value"], errors="coerce")
     result = df.groupby("event_type")["value"].agg(count="count", avg="mean")
