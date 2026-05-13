@@ -34,11 +34,12 @@ cp .env.example .env
 ```
 
 `.env` must contain:
+```bash
 AWS_ACCESS_KEY_ID=your_key
 AWS_SECRET_ACCESS_KEY=your_secret
 AWS_DEFAULT_REGION=your_region # e.g. eu-west-1
 AWS_BUCKET_NAME=your_bucket_name
-
+```
 To maintain platform security, API keys are restricted. 
 Please contact keenan.hardy@unine.ch to request access.
 
