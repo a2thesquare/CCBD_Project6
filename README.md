@@ -81,7 +81,6 @@ jupyter notebook analysis.ipynb
 Run all cells. The notebook reads `results.csv` and produces:
 - Cost breakdown plots (storage vs requests vs transfer)
 - Query time comparison across variants 
-- Concrete recommendations ??????????????? I guess we do this in here ====================================
 
 ---
 
