@@ -1,4 +1,4 @@
-# all the imports
+# Main benchmark script: upload variants, download them, query them, and save results.
 import boto3
 import os
 import time
@@ -9,13 +9,12 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pyarrow.compute as pc
 from datetime import datetime, timezone
-# import shutil -------- we'd like to use this to easily replace data ( small files and partitioned ) so that we don't have to manually delete data before running bench.py
 
-# reuse upload/download functions from our existing scripts
+# Reuse upload/download functions so the benchmark stays focused on measurement.
 from upload import upload_raw, upload_parquet, upload_parquet_small, upload_parquet_partitioned
 from download import download_raw, download_parquet, download_parquet_small, download_parquet_partitioned
 
-# this has the access keys and bucket info form s3
+# Load AWS credentials and bucket name from .env.
 load_dotenv()
 
 
@@ -23,7 +22,7 @@ BUCKET = os.getenv("AWS_BUCKET_NAME")
 s3     = boto3.client("s3")
 
 
-# Provided pricing
+# Simple pricing model used to estimate the S3 bill for each variant.
 STORAGE_PER_GB_MONTH = 0.020  # per GB stored per month
 PUT_PER_1000         = 0.010  # per 1000 PUT/LIST requests
 GET_PER_1000         = 0.001  # per 1000 GET requests
@@ -31,7 +30,7 @@ EGRESS_PER_GB        = 0.090  # per GB downloaded (egress)
 
 
 def dir_size(path):
-    # Getting correct path, it was returning 0 mbs up and down speed
+    # Works for both one file and folders with many files.
     p = Path(path)
     if p.is_dir():
         return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
@@ -39,6 +38,7 @@ def dir_size(path):
 
 
 def get_stored_gb(prefix):
+    # Ask S3 what is stored under a prefix and also time the listing request.
     t0 = time.time()
     response = s3.list_objects_v2(Bucket=BUCKET, Prefix=prefix)
     listing_time = time.time() - t0
@@ -47,6 +47,7 @@ def get_stored_gb(prefix):
 
 def run_query(label, variant, compression=None):
 
+    # Pick the local downloaded dataset that matches the variant being tested.
     if variant == "raw":
         path = f"data/download/{label}_raw.csv"
         dataset = ds.dataset(path, format="csv")
@@ -58,14 +59,14 @@ def run_query(label, variant, compression=None):
         dataset = ds.dataset(path, format="parquet")
     elif variant == "parquet_partitioned":
         path = f"data/download/parquet_partitioned/{label}"
-        dataset = ds.dataset(path, format="parquet", partitioning="hive")  # reads year_month= folders
+        dataset = ds.dataset(path, format="parquet", partitioning="hive")  # reads year_month=... folders
 
-    # Fixed query parameters — same across all variants for fair comparison
+    # Same filter for every variant, so the timing comparison is fair.
     REGION = "Europe"
     TIME_START = "2022-01-01"
     TIME_END   = "2023-01-01"
 
-    #Predicate pushdown filter — pyarrow.dataset applies this before loading data into memory
+    # Pyarrow can apply this filter before loading all rows into memory.
     filt = (
         (pc.field("region") == REGION) &
         (pc.field("ts").cast(pa.string()) >= TIME_START) &
@@ -76,7 +77,7 @@ def run_query(label, variant, compression=None):
     table = dataset.to_table(filter=filt, columns=["event_type", "value"])
     elapsed = time.time() - t0
 
-    # Group by event_type -> count + avg value
+    # After filtering we calculate the requested count and average per event type.
     df = table.to_pandas()
     df["value"] = pd.to_numeric(df["value"], errors="coerce")
     result = df.groupby("event_type")["value"].agg(count="count", avg="mean")
@@ -88,6 +89,7 @@ def run_query(label, variant, compression=None):
 
 
 def append_query_time(label, variant, compression, query_time_s):
+    # run_exp creates the row first, this fills in the query time afterwards.
     df = pd.read_csv(RESULTS_PATH)
     mask = (
         (df["label"] == label) &
@@ -99,6 +101,7 @@ def append_query_time(label, variant, compression, query_time_s):
 
 
 def compute_cost(stored_gb, puts, gets, lists, egress_gb):
+    # Split the estimate into storage, requests, and download transfer.
     storage  = stored_gb * STORAGE_PER_GB_MONTH
     requests = ((puts + lists) / 1000) * PUT_PER_1000
     requests += (gets / 1000) * GET_PER_1000
@@ -109,7 +112,8 @@ RESULTS_PATH = Path("results.csv")
 
 
 def run_exp(label, variant, compression=None):
-    if variant == "raw":  # just a csv
+    # Set the local download path and S3 prefix for the chosen layout.
+    if variant == "raw":
         download_path = Path(f"data/download/{label}_raw.csv")
         s3_prefix     = f"raw/{label}/"
 
@@ -125,36 +129,36 @@ def run_exp(label, variant, compression=None):
         download_path = Path(f"data/download/parquet_partitioned/{label}")
         s3_prefix     = f"curated/{label}/parquet_partitioned/"
 
-    # time to upload
-    t0 = time.time()  # return current time in sec
+    # Upload the chosen layout and count the approximate S3 requests it causes.
+    t0 = time.time()
 
     if variant == "raw":
         upload_raw(label)
         upload_bytes = dir_size(Path(f"data/raw/{label}.csv"))
-        # 1 PUT (upload) + 1 GET (download) + 1 GET (query scan) + 1 LIST (list prefix)
+        # One uploaded file: 1 PUT, 1 download GET, 1 query GET, and 1 LIST.
         puts, gets, lists = 1, 2, 1
 
     elif variant == "parquet":
         upload_parquet(label, compression)
         upload_bytes = dir_size(Path(f"data/parquet/{label}.parquet"))
-        # 1 PUT (upload) + 1 GET (download) + 1 GET (query scan) + 1 LIST
+        # Same request estimate as raw because it is also one object.
         puts, gets, lists = 1, 2, 1
 
     elif variant == "parquet_small":
         n_files = upload_parquet_small(label)
         upload_bytes = dir_size(Path(f"data/parquet_small/{label}"))
-        # n PUTs (one per file upload) + n GETs (download) + n GETs (query scans each file) + 1 LIST
+        # Many objects increase request cost: one PUT and two GETs per file.
         puts, gets, lists = n_files, n_files * 2, 1
 
     elif variant == "parquet_partitioned":
         n_files = upload_parquet_partitioned(label, compression)
         upload_bytes = dir_size(Path(f"data/parquet_partitionned/{label}"))
-        # n PUTs + n GETs (download) + n GETs (query) + n LISTs (one per partition folder)
+        # Partition folders are counted as extra LIST work in this simple estimate.
         puts, gets, lists = n_files, n_files * 2, n_files
 
-    upload_time = time.time() - t0  # time now - t0
+    upload_time = time.time() - t0
 
-    # time to download
+    # Download the same variant back locally so the query uses the measured file layout.
     t0 = time.time()
 
     if variant == "raw":
@@ -169,11 +173,11 @@ def run_exp(label, variant, compression=None):
     download_time  = time.time() - t0
     download_bytes = dir_size(download_path)
 
-    # measure S3 storage
+    # Measure what is stored on S3 after upload and convert downloaded bytes to egress GB.
     stored_gb, n_files, listing_time_s = get_stored_gb(s3_prefix)
     egress_gb = download_bytes / 1e9
 
-    # compute the cost
+    # Compute the estimated bill and save one row in results.csv.
     storage, requests, transfer, total = compute_cost(stored_gb, puts, gets, lists, egress_gb)
 
     row = {
@@ -187,7 +191,7 @@ def run_exp(label, variant, compression=None):
     "puts":           puts,
     "gets":           gets,
     "lists":          lists,
-    "listing_time_s": listing_time_s,   # ← new
+    "listing_time_s": listing_time_s,
     "storage_chf":    round(storage, 6),
     "requests_chf":   round(requests, 6),
     "transfer_chf":   round(transfer, 6),
@@ -199,7 +203,7 @@ def run_exp(label, variant, compression=None):
 
 if __name__ == "__main__":
     for label in ["S","M","L"]:
-        # 1) raw CSV and raw parquet
+        # 1) Baseline: raw CSV, then Parquet without compression.
         run_exp(label, "raw")
         qt = run_query(label, "raw")
         append_query_time(label, "raw", None, qt)
@@ -208,7 +212,7 @@ if __name__ == "__main__":
         qt = run_query(label, "parquet")
         append_query_time(label, "parquet", "none", qt)
 
-        # # 2) parquet with snappy vs zstd vs gzip
+        # 2) Compression comparison: Snappy vs ZSTD.
         run_exp(label, "parquet", compression="snappy")
         qt = run_query(label, "parquet", compression="snappy")
         append_query_time(label, "parquet", "snappy", qt)
@@ -217,12 +221,12 @@ if __name__ == "__main__":
         qt = run_query(label, "parquet", compression="zstd")
         append_query_time(label, "parquet", "zstd", qt)
 
-        # 3) parquet small vs parquet compact
+        # 3) File-size comparison: many small Parquet files.
         run_exp(label, "parquet_small")
         qt = run_query(label, "parquet_small")
         append_query_time(label, "parquet_small", None, qt)
 
-        # 4) parquet sectionned by date
+        # 4) Layout comparison: Parquet partitioned by month.
         run_exp(label, "parquet_partitioned")
         qt = run_query(label, "parquet_partitioned")
         append_query_time(label, "parquet_partitioned", None, qt)
