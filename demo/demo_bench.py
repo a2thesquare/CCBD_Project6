@@ -1,3 +1,4 @@
+# Angeliki Andreadi, Keenan Hardy
 import boto3
 import os
 import time

@@ -1,3 +1,4 @@
+# Angeliki Andreadi, Keenan Hardy
 # Main benchmark script: upload variants, download them, query them, and save results.
 import boto3
 import os
