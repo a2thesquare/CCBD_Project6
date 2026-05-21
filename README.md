@@ -23,7 +23,8 @@ We compared 3 sets of two design choices for each dataset size:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate # if on MAC
+source .venv/Scripts/activate # if on WINDOWS
 pip install -r requirements.txt
 ```
 
