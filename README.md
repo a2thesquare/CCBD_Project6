@@ -3,7 +3,7 @@
 **Authors:** Angeliki Andreadi, Keenan Hardy  
 **Course:** Cloud Computing and Big Data — SP26  
 
-[Demo video by swisstransfer](https://www.swisstransfer.com/d/df471609-269a-41c1-9f79-93529ad22cab)
+[Demo video by swisstransfer](https://www.swisstransfer.com/d/41303bda-f7d4-4eeb-837d-3a3dae809d70)
 
 ## Overview
 This project analyzes how data engineering choices impact object storage costs. I built an estimator to calculate the financial trade-offs between different file formats and layouts. The goal is to provide concrete recommendations for reducing cloud spend while maintaining acceptable performance, backed by a clear distinction between measured data and approximations.
